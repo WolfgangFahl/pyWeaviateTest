@@ -1,0 +1,2 @@
+# pyWeaviateTest
+Weaviate Test
