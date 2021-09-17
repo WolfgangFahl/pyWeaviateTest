@@ -1,0 +1,13 @@
+#!/bin/bash
+# WF 2021-09-17
+# Install weaviate
+# see https://www.semi.technology/developers/weaviate/current/getting-started/installation.html
+whome=$HOME/.weaviate
+if [ ! -d $whome ]
+then
+  mkdir -p $whome
+fi
+cd $whome
+curl -o docker-compose.yml "https://configuration.semi.technology/v2/docker-compose/docker-compose.yml?enterprise_usage_collector=false&gpu_support=false&media_type=text&ner_module=false&qna_module=false&runtime=docker-compose&spellcheck_module=false&text_module=text2vec-transformers&transformers_model=sentence-transformers-multi-qa-MiniLM-L6-cos-v1&weaviate_version=v1.7.0"
+
+docker compose up
