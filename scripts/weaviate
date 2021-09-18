@@ -2,12 +2,123 @@
 # WF 2021-09-17
 # Install weaviate
 # see https://www.semi.technology/developers/weaviate/current/getting-started/installation.html
+
+# weaviate home
 whome=$HOME/.weaviate
+
+# port to be used
+port=8080
+
+# maximum number of seconds to wait for weaviate startup
+MAX_WAIT_SECONDS=60
+
+#ansi colors
+#http://www.csc.uvic.ca/~sae/seng265/fall04/tips/s265s047-tips/bash-using-colors.html
+blue='\033[0;34m'
+red='\033[0;31m'
+green='\033[0;32m' # '\e[1;32m' is too bright for white bg.
+endColor='\033[0m'
+
+#
+# a colored message
+#   params:
+#     1: l_color - the color of the message
+#     2: l_msg - the message to display
+#
+color_msg() {
+  local l_color="$1"
+  local l_msg="$2"
+  echo -e "${l_color}$l_msg${endColor}"
+}
+
+#
+# error
+#
+# show the given error message on stderr and exit
+#
+#   params:
+#     1: l_msg - the error message to display
+#
+error() {
+  local l_msg="$1"
+  # use ansi red for error
+  color_msg $red "Error:" 1>&2
+  color_msg $red "\t$l_msg" 1>&2
+  exit 1
+}
+
+
+# show usage
+#
+usage() {
+  echo "$0 [-h|--help|-k|--kill]"
+  echo ""
+  echo "-h | --help: show this usage"
+  echo "-k | --kill: stop the docker compose services"
+  exit 1
+}
+
+# Download the Weaviate configuration file
+download() {
+  if [ ! -f docker-compose.yml ]
+  then
+    color_msg $blue "Downloading docker-compose.yml"
+    curl -o docker-compose.yml "https://configuration.semi.technology/v2/docker-compose/docker-compose.yml?enterprise_usage_collector=false&gpu_support=false&media_type=text&ner_module=false&qna_module=false&runtime=docker-compose&spellcheck_module=false&text_module=text2vec-transformers&transformers_model=sentence-transformers-multi-qa-MiniLM-L6-cos-v1&weaviate_version=v1.7.0"
+  else
+    color_msg $green "docker-compose.yml already downloaded"
+  fi
+}
+
+#
+# wait for weaviate to start
+#
+wait4Weaviate() {
+  ALREADY_WAITING=0
+  color_msg $blue "waiting for weaviate to start "
+  while true; do
+    if curl -s http://localhost:$port > /dev/null; then
+        break
+    else
+      echo -n "."
+      if [ $ALREADY_WAITING -gt $MAX_WAIT_SECONDS ]; then
+        error "Weaviate did not start up in $MAX_WAIT_SECONDS."
+      else
+        sleep 2
+        let ALREADY_WAITING=$ALREADY_WAITING+2
+      fi
+    fi
+  done
+  echo "."
+  color_msg $green "weaviate is up and running on port $port"
+}
+
+which docker-compose
+if [ $? -ne 0 ]
+then
+  error "docker-compose needs to be installed for weaviate to run"
+fi
+
 if [ ! -d $whome ]
 then
+  color_msg $blue creating "$whome"
   mkdir -p $whome
 fi
 cd $whome
-curl -o docker-compose.yml "https://configuration.semi.technology/v2/docker-compose/docker-compose.yml?enterprise_usage_collector=false&gpu_support=false&media_type=text&ner_module=false&qna_module=false&runtime=docker-compose&spellcheck_module=false&text_module=text2vec-transformers&transformers_model=sentence-transformers-multi-qa-MiniLM-L6-cos-v1&weaviate_version=v1.7.0"
 
-docker compose up
+if [ $# -lt 1 ]
+then
+  download
+  # Run Docker Compose
+  docker-compose up -d
+  wait4Weaviate
+fi
+# commandline option
+while [  "$1" != ""  ]
+do
+  option="$1"
+  case $option in
+    -k|--kill) docker-compose down;;
+    -h|--help) usage;;
+  esac
+  shift
+done

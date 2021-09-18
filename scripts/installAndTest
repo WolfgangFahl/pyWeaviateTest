@@ -1,0 +1,10 @@
+#!/bin/bash
+# WF 2021-09-18
+# install and test
+# command to install dependencies
+scripts/install
+# command to run weaviate
+scripts/weaviate
+# command to run tests
+scripts/test
+

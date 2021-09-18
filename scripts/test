@@ -1,0 +1,3 @@
+#!/bin/bash
+# WF 2021-09-18
+python3 -m unittest discover
