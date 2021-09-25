@@ -4,7 +4,7 @@
 # command to install dependencies
 scripts/install
 # command to run weaviate
-scripts/weaviate
+# scripts/weaviate
 # command to run tests
 scripts/test
 

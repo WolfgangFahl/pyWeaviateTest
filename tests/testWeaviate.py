@@ -7,6 +7,7 @@ Created 2021
 import unittest
 import weaviate
 import time
+from storage.weaviatestorage import Weaviate,DockerUtil
 #import getpass
 
 person_schema = {
@@ -51,21 +52,19 @@ class TestWeaviate(unittest.TestCase):
         '''
         set up this test case
         '''
-        self.port=8080
-        self.host="localhost"
+        self.weaviate=Weaviate.start()
         pass
-    
     
     def getClient(self):
+        return self.weaviate.client
+    
+    def testContainer(self):
         '''
-        get the client
+        check the docker container for weaviate
         '''
-        url=f"http://{self.host}:{self.port}"
-        self.client=weaviate.Client(url) 
-        return self.client
-
-    def tearDown(self):
-        pass
+        cmap=DockerUtil.getContainerMap()
+        print(cmap)
+    
         
     def testRunning(self):
         '''
