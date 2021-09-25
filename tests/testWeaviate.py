@@ -48,15 +48,20 @@ class TestWeaviate(unittest.TestCase):
     # https://www.semi.technology/developers/weaviate/current/client-libraries/python.html
 
     def setUp(self):
+        '''
+        set up this test case
+        '''
         self.port=8080
         self.host="localhost"
-        #if getpass.getuser()=="wf":
-        #    self.host="zeus"
-        #    self.port=8080
         pass
     
+    
     def getClient(self):
-        self.client=weaviate.Client("http://%s:%d" % (self.host,self.port))
+        '''
+        get the client
+        '''
+        url=f"http://{self.host}:{self.port}"
+        self.client=weaviate.Client(url) 
         return self.client
 
     def tearDown(self):
