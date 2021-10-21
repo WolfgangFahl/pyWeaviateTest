@@ -80,7 +80,7 @@ class DockerUtil():
     def check()->str:
         errMsg=None
         if not docker.compose.is_installed():
-            errMsg="""docker composer up needs to be working
+            errMsg="""docker compose up needs to be working
             you might want to install https://github.com/docker/compose-cli
             Compose v2 can be installed manually as a CLI plugin, 
             by downloading latest v2.x release from https://github.com/docker/compose-cli/releases for your architecture and move into ~/.docker/cli-plugins/docker-compose
