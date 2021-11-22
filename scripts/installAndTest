@@ -4,6 +4,6 @@
 # command to install dependencies
 scripts/install
 # command to run weaviate
-scripts/weaviate
+scripts/weaviate -d -p 8090 -f -r -w 
 # command to run tests
 scripts/test

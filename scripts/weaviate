@@ -51,10 +51,14 @@ error() {
 # show usage
 #
 usage() {
-  echo "$0 [-h|--help|-k|--kill]"
+  echo "$0 [-h|--help|-k|--kill] [-p|--port port]"
   echo ""
   echo "-h | --help: show this usage"
+  echo "-d | --download: download the docker compose file"
   echo "-k | --kill: stop the docker compose services"
+  echo "-r | --run: run the weaviate docker service"
+  echo "-w | --wait: wait for weaviate to start"
+  echo "-p | --port: specify the port to use"
   exit 1
 }
 
@@ -67,6 +71,18 @@ download() {
   else
     color_msg $green "docker-compose.yml already downloaded"
   fi
+}
+
+# fix the port being used in the docker compose file
+fixport() {
+  local l_port="$1"
+  cat docker-compose.yml | gawk -v port=$l_port > docker-compose-port.yml '
+  /- .*:8080/ {
+      printf ("    - %s:8080\n",port);
+      next
+    }
+  {print}'
+  mv docker-compose-port.yml docker-compose.yml
 }
 
 #
@@ -105,19 +121,31 @@ then
 fi
 cd $whome
 
-if [ $# -lt 1 ]
-then
-  download
-  # Run Docker Compose
-  docker-compose up -d
-  wait4Weaviate
-fi
 # commandline option
 while [  "$1" != ""  ]
 do
   option="$1"
   case $option in
     -k|--kill) docker-compose down;;
+    -p|--port)
+      if [ $# -lt 1 ]
+      then
+        usage
+      fi
+      shift
+      port="$1"
+      fixport "$port"
+      ;;
+    -d|--download)
+      download
+      ;;
+    -r|--run)
+      # Run Docker Compose
+      docker-compose up -d
+      ;;
+    -w|--wait)
+      wait4Weaviate
+      ;;
     -h|--help) usage;;
   esac
   shift

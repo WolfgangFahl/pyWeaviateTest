@@ -7,6 +7,7 @@ import weaviate
 from python_on_whales import docker
 from pathlib import Path
 import os
+import yaml
 
 class Weaviate(object):
     '''
@@ -28,14 +29,19 @@ class Weaviate(object):
        
         
     @staticmethod
-    def start(port=8080):
+    def start(port=None):
         '''
         start weaviate
+        
+        Args:
+            port(int): the port to use - if None is specified the port mapping is read from the docker-compose file
         
         Returns:
             Weaviate: a weaviate instance
         
         '''
+        if port is None:
+            port=Weaviate.readPort()
         check=DockerUtil.check()
         if check is not None:
             raise Exception(check)
@@ -46,18 +52,35 @@ class Weaviate(object):
         return weaviate
     
     @staticmethod
-    def startDockerContainer(port=8080):
+    def startDockerContainer():
         '''
-        start the docker container for weaviate on the given port
+        start the docker container for weaviate 
+        from the docker composer file in the default dockerPath 
         
-        port(int): the port to use
         '''
-        home = str(Path.home())
-        dockerPath=f'{home}/.weaviate' 
+        dockerPath=Weaviate.getDockerPath()
         # change directory so that docker CLI will find the relevant dockerfile and docker-compose.yml
         os.chdir(dockerPath)
         # run docker compose up
         docker.compose.up(detach=True)    
+        
+    @staticmethod
+    def getDockerPath():
+        home = str(Path.home())
+        dockerPath=f'{home}/.weaviate' 
+        return dockerPath
+        
+    @staticmethod
+    def readPort():    
+        dockerPath=Weaviate.getDockerPath()
+        composeYaml=f'{dockerPath}/docker-compose.yml'
+        with open(composeYaml, 'r') as stream:
+            compose = yaml.safe_load(stream)
+            ports=compose['services']['weaviate']['ports'][0]
+            portStr=ports.split(":")[0]
+            return int(portStr)
+
+        
         
 class DockerUtil():
     '''
