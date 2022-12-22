@@ -47,7 +47,7 @@ class Weaviate(object):
             raise Exception(check)
         containerMap=DockerUtil.getContainerMap()
         if not "weaviate_weaviate_1" in containerMap:
-            Weaviate.startDockerContainer(port=port)
+            Weaviate.startDockerContainer()
         weaviate=Weaviate(port=port)
         return weaviate
     
@@ -79,8 +79,6 @@ class Weaviate(object):
             ports=compose['services']['weaviate']['ports'][0]
             portStr=ports.split(":")[0]
             return int(portStr)
-
-        
         
 class DockerUtil():
     '''
