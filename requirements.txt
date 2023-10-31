@@ -1,6 +1,6 @@
 # https://www.semi.technology/documentation/weaviate/current/client-libs/python.html
 # https://weaviate-python-client.readthedocs.io/en/latest/
-weaviate-client>=3.9.0
+weaviate-client>=v3.25.1
 # https://pypi.org/project/pylodstorage/
 pylodstorage
 # https://github.com/gabrieldemarmiesse/python-on-whales

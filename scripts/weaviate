@@ -62,14 +62,31 @@ usage() {
   exit 1
 }
 
+# check docker_compose
+# params
+#  #1 the docker compose file to check
+check_docker_compose() {
+  local docker_compose_file="$1"
+  # Check the file type of docker-compose.yml
+  file_type=$(file "$docker_compose_file")
+  echo $file_type
+  is_json=$(echo $file_type | grep "JSON data")
+  json_state=$?
+  if [ $json_state -eq 0 ]
+  then
+    error_msg=$(jq .error $docker_compose_file)
+    error "$error_msg"
+  fi
+}
+
 # Download the Weaviate configuration file
 download() {
   if [ ! -f docker-compose.yml ]
   then
     color_msg $blue "Downloading docker-compose.yml"
-    version=v1.19.6
+    version=v1.22.1
     url="https://configuration.weaviate.io/v2/docker-compose/docker-compose.yml?"
-    options="generative_cohere=false&generative_openai=true&generative_openai_key_approval=yes&generative_palm=false&gpu_support=false&media_type=text&modules=modules&ner_module=false&qna_module=false&ref2vec_centroid=false&runtime=docker-compose&spellcheck_module=false&sum_module=false&text_module=text2vec-transformers&transformers_model=sentence-transformers-multi-qa-MiniLM-L6-cos-v1&weaviate_version=$version"
+    options="modules=standalone&runtime=docker-compose&weaviate_version=$version&weaviate_volume=no-volume"
     curl -o docker-compose.yml  "$url$options"
   else
     color_msg $green "docker-compose.yml already downloaded"
@@ -79,13 +96,14 @@ download() {
 # fix the port being used in the docker compose file
 fixport() {
   local l_port="$1"
-  cat docker-compose.yml | gawk -v port=$l_port > docker-compose-port.yml '
+  local docker_compose_file="$2"
+  cat  $docker_compose_file | gawk -v port=$l_port >   ${docker_compose_file}-port.yml '
   /- .*:8080/ {
       printf ("    - %s:8080\n",port);
       next
     }
   {print}'
-  mv docker-compose-port.yml docker-compose.yml
+  mv ${docker_compose_file}-port.yml $docker_compose_file
 }
 
 #
@@ -124,6 +142,7 @@ then
 fi
 cd $whome
 
+docker_compose_file=docker-compose.yml
 # commandline option
 while [  "$1" != ""  ]
 do
@@ -137,10 +156,11 @@ do
       fi
       shift
       port="$1"
-      fixport "$port"
+      fixport "$port" "$docker_compose_file"
       ;;
     -d|--download)
       download
+      check_docker_compose "$docker_compose_file"
       ;;
     -r|--run)
       # Run Docker Compose
