@@ -116,10 +116,11 @@ def main():
     parser = argparse.ArgumentParser(description="Start weaviate")
     parser.add_argument('--debug', action='store_true', help='enable debug mode')
     parser.add_argument('-s', '--start', action='store_true', help='start weaviate')
+    parser.add_argument('-p', '--port', type=int, default=8090, help='port to use (default: 8090)')
 
     args = parser.parse_args()
     if args.start:
-        wqec = WeaviateQueryExecutionContext(debug=args.debug)
+        wqec = WeaviateQueryExecutionContext(port=args.port,debug=args.debug)
         is_ready = wqec.is_ready()
         print(f"Weaviate {'✅ ready' if is_ready else '❌ not ready'}")
         return 0 if is_ready else 1
