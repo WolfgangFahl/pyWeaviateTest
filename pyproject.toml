@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyWeaviateTest"
+authors = [
+    {name = "Wolfgang Fahl", email = "wf@bitplan.com"}
+]
+maintainers = [
+    {name = "Wolfgang Fahl", email = "wf@bitplan.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+dependencies = [
+  # https://pypi.org/project/weaviate-client/
+  "weaviate-client>=4.11.0",
+  # https://pypi.org/project/python-on-whales/
+  "python-on-whales>=0.75.1",
+  # https://pypi.org/project/PyYAML/
+  "PyYAML>=6.0.2"
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License"
+]
+dynamic = ["version", "description"]
+
+[tool.hatch.version]
+path = "storage/__init__.py"
+
+[project.urls]
+Home = "https://github.com/WolfgangFahl/pyWeaviateTest"
+Documentation = "https://wiki.bitplan.com/index.php/PyWeaviateTest"
+Source = "https://github.com/WolfgangFahl/pyWeaviateTest"
+
+[project.optional-dependencies]
+test = [
+    "green"
+]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["storage"]
+
+[tool.hatch.build.targets.wheel.sources]
+"storage" = "storage"
