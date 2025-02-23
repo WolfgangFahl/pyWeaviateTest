@@ -18,7 +18,10 @@ dependencies = [
   # https://pypi.org/project/python-on-whales/
   "python-on-whales>=0.75.1",
   # https://pypi.org/project/PyYAML/
-  "PyYAML>=6.0.2"
+  "PyYAML>=6.0.2",
+  # pylodstorage
+  # https://pypi.org/project/pyLodStorage/
+  "pyLodStorage>=0.14.3"
 ]
 requires-python = ">=3.9"
 classifiers = [
@@ -55,3 +58,6 @@ only-include = ["storage"]
 
 [tool.hatch.build.targets.wheel.sources]
 "storage" = "storage"
+
+[project.scripts]
+weaviate = "storage.weaviate_qec:main"
