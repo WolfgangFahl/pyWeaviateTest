@@ -6,9 +6,12 @@ Weaviate Query Execution Context
 
 @author: wf
 """
+
 import argparse
+
 import weaviate
 from python_on_whales import docker
+from weaviate.classes.init import AdditionalConfig, Timeout
 
 from storage.dockerutil import DockerEnv, DockerMap
 
@@ -22,8 +25,15 @@ class WeaviateQueryExecutionContext:
     https://weaviate-python-client.readthedocs.io/en/stable/
     """
 
+    default_port: int = 8090
+    default_gprc_port = 50051
+
     def __init__(
-        self, port=8080, grpc_port=50051, host="localhost", debug: bool = False
+        self,
+        port=default_port,
+        grpc_port=default_gprc_port,
+        host="localhost",
+        debug: bool = False,
     ):
         """
         Constructor for Weaviate Query Execution Context.
@@ -52,7 +62,13 @@ class WeaviateQueryExecutionContext:
             self.ensure_weaviate()
             if with_compose:
                 raise NotImplementedError("Compose support is not implemented yet.")
-            client = weaviate.connect_to_local()
+            client = weaviate.connect_to_local(
+                port=self.port,
+                grpc_port=self.grpc_port,
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=30, query=60, insert=120)
+                ),
+            )
         else:
             raise NotImplementedError("Cloud support is not implemented yet.")
         return client
@@ -109,15 +125,24 @@ class WeaviateQueryExecutionContext:
             self.client.schema.delete_all()
         self.client.schema.create(schema)
 
+
 def main():
     """
     Main entry point for weaviate startup
     """
     parser = argparse.ArgumentParser(description="Start weaviate")
-    parser.add_argument('--debug', action='store_true', help='enable debug mode')
-    parser.add_argument('-k', '--kill', action='store_true', help='stop the weaviate service')
-    parser.add_argument('-s', '--start', action='store_true', help='start weaviate')
-    parser.add_argument('-p', '--port', type=int, default=8090, help='port to use (default: 8090)')
+    parser.add_argument("--debug", action="store_true", help="enable debug mode")
+    parser.add_argument(
+        "-k", "--kill", action="store_true", help="stop the weaviate service"
+    )
+    parser.add_argument("-s", "--start", action="store_true", help="start weaviate")
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=WeaviateQueryExecutionContext.default_port,
+        help="port to use (default: 8090)",
+    )
 
     args = parser.parse_args()
     if args.kill:
@@ -128,11 +153,13 @@ def main():
                 print(f"killed running weaviate {container.id}")
         return 0
     if args.start:
-        wqec = WeaviateQueryExecutionContext(port=args.port,debug=args.debug)
+        wqec = WeaviateQueryExecutionContext(port=args.port, debug=args.debug)
         is_ready = wqec.is_ready()
-        print(f"Weaviate {'✅ ready on port {args.port}' if is_ready else '❌ not ready'}")
+        print(
+            f"Weaviate {'✅ ready on port {args.port}' if is_ready else '❌ not ready'}"
+        )
         return 0 if is_ready else 1
+
 
 if __name__ == "__main__":
     main()
-
